@@ -30,6 +30,10 @@ switch ( $route->getController() ) {
         include( APP_CONTROLLER . '/homeController.php');
         break;
 
+    case 'profile':
+        include( APP_CONTROLLER . '/profileController.php');
+        break;
+
     default:
         include( APP_CONTROLLER . '/homeController.php');
         break;
