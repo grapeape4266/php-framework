@@ -6,13 +6,15 @@
           	<div class="row">
             	<div class="col-md-6">
 
-            		<?php if ( true === $error) { ?>
-
+            		<?php if (true === $error) { ?>
 					      	<div class="row alert alert-danger" role="alert">
-					            Password Reset Error!
+					            <?php print $errorMessage; ?>
 					      	</div>				       
-
-					     	<?php } ?>
+					     	<?php } elseif (true === $success) { ?>
+                  <div class="row alert alert-info" role="alert">
+                      Password update successfully.
+                  </div>               
+                <?php } ?>
 
                 <form method="post" action="<?php echo APP_DOC_ROOT; ?>/profile/password">
              

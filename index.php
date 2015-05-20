@@ -1,5 +1,7 @@
 <?php
 
+//print md5('ceb20772e0c9d240c75eb26b0e37abee'.'password');
+
 // Load bootstrap to apply configuration
 include('config/bootstrap.php');
 

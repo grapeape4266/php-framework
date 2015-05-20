@@ -10,14 +10,28 @@ include( APP_VIEW . '/nav.php' );
 switch ( $route->getAction() ) {
 
     case 'password':
+    	$error        = false;
+    	$errorMessage = '';
+    	$success      = false;
     	if (isset($_POST["newPassword"])) {
-    		$error = false;
+
+    		// Make sure all three fields are completed
     		if (
-    			isset($_POST["currentPassword"]) &&
-    			isset($_POST["newPassword"]) &&
-    			isset($_POST["confirmPassword"]) &&
-    			$_POST["newPassword"] == $_POST["confirmPassword"]
+    			!isset($_POST["currentPassword"]) ||
+    			!isset($_POST["newPassword"]) ||
+    			!isset($_POST["confirmPassword"])
     			) {
+    			$error = true;
+    			$errorMessage .= 'All three fields are required<br>';
+    		}
+
+    		// Make sure password and confirm password match
+    		if ($_POST["newPassword"] != $_POST["confirmPassword"]) {
+    			$error = true;
+    			$errorMessage .= 'Password and Confirm Password must match<br>';
+    		}
+
+    		if (false === $error) {
 
     			// Proccess Change
     			$sql = "SELECT
@@ -34,25 +48,32 @@ switch ( $route->getAction() ) {
 	            $row = $dbObj->dbFetch( 'assoc' );
 
 	            if ( isset($row['username']) ) {
-	                $token = md5( $row["salt"] . $_POST["newPassword"] );
 
-	                $sql = "UPDATE
-		                     auth_user
-		                    SET
-		                     password = ?
-		                    WHERE
-		                      username = ?";
+	            	$curToken = md5( $row["salt"] . $_POST["currentPassword"] );
+	                $newToken = md5( $row["salt"] . $_POST["newPassword"] );
 
-		            $dbObj = new db();
-		            $dbObj->dbPrepare( $sql );
-		            $dbObj->dbExecute( array( $token, $_SESSION["username"] ) );
+	                if ($curToken != $row['password']) {
+	                	$error = true;
+		        		$errorMessage .= 'Current Password does not match.<br>';
+	                }
+	                else {
+		                $sql = "UPDATE
+			                     auth_user
+			                    SET
+			                     password = ?
+			                    WHERE
+			                      username = ?";
+
+			            $dbObj = new db();
+			            $dbObj->dbPrepare( $sql );
+			            $dbObj->dbExecute( array( $newToken, $_SESSION["username"] ) );
+			            $success      = true;
+			        }
 		        }
 		        else {
 		        	$error = true;
+		        	$errorMessage .= 'User not found.<br>';
 		        }	
-    		}
-    		else {
-    			$error = true;
     		}
     	}
         include( APP_VIEW .'/profile/profileSubNav.php' );
@@ -60,6 +81,20 @@ switch ( $route->getAction() ) {
         break;
 
     default:
+
+    	$sql = "SELECT
+                  *
+                FROM
+                  auth_user
+                WHERE
+                  username = ?";
+
+        $dbObj = new db();
+        $dbObj->dbPrepare( $sql );
+        $dbObj->dbExecute( array( $_SESSION["username"] ) );
+
+        $row = $dbObj->dbFetch( 'assoc' );
+
         include( APP_VIEW .'/profile/profileSubNav.php' );
         include( APP_VIEW .'/profile/profileView.php' );
         break;
